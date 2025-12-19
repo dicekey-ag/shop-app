@@ -2,16 +2,17 @@ const fastify = require('fastify')({ logger: true });
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 
+// 静的ファイル配信用のプラグインを登録
+fastify.register(require('@fastify/static'), {
+  root: path.join(__dirname, 'public'),
+  prefix: '/', // http://localhost:3000/ で index.html にアクセスできるようにする
+});
+
 // データベースへの接続
 const dbPath = path.resolve(__dirname, 'shop.db');
 const db = new sqlite3.Database(dbPath);
 
-// ルートパス: 動作確認用
-fastify.get('/', async (request, reply) => {
-  return { message: 'Welcome to the Shop API!' };
-});
-
-// 商品一覧を取得するAPI (/products)
+// 商品一覧API
 fastify.get('/products', (request, reply) => {
   return new Promise((resolve, reject) => {
     db.all("SELECT * FROM products", (err, rows) => {

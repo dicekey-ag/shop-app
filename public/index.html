@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shop App</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; }
+        .product { border: 1px solid #ddd; padding: 10px; margin-bottom: 10px; border-radius: 5px; }
+        h1 { color: #333; }
+    </style>
+</head>
+<body>
+    <h1>商品一覧</h1>
+    <div id="product-list">読み込み中...</div>
+
+    <script>
+        // ページが開いたら /products にアクセスしてデータを取る
+        fetch('/products')
+            .then(response => response.json())
+            .then(data => {
+                const list = document.getElementById('product-list');
+                list.innerHTML = ''; // クリア
+
+                data.forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = 'product';
+                    div.innerHTML = `<strong>${item.name}</strong> - ¥${item.price}`;
+                    list.appendChild(div);
+                });
+            })
+            .catch(err => {
+                document.getElementById('product-list').textContent = 'エラーが発生しました';
+                console.error(err);
+            });
+    </script>
+</body>
+</html>
