@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8">
+  <title>TechMart - ガジェット通販</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .header {
+      text-align: center;
+      border-bottom: 2px solid #333;
+      margin-bottom: 20px;
+    }
+
+    .item-card {
+      border: 1px solid #ddd;
+      padding: 15px;
+      margin-bottom: 15px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+    }
+
+    .item-info {
+      flex-grow: 1;
+    }
+
+    .item-name {
+      font-size: 1.2em;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+
+    .item-desc {
+      color: #666;
+      font-size: 0.9em;
+      margin-bottom: 10px;
+    }
+
+    .item-price {
+      color: #d00;
+      font-weight: bold;
+      font-size: 1.1em;
+    }
+
+    .order-form {
+      text-align: right;
+      min-width: 150px;
+    }
+
+    input[type="number"] {
+      width: 50px;
+      padding: 5px;
+      text-align: center;
+    }
+
+    button {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="header">
+    <h1>TechMart</h1>
+    <p>最新ガジェットをあなたのお手元へ</p>
+  </div>
+
+  <% items.forEach(item=> { %>
+    <div class="item-card">
+      <div class="item-info">
+        <div class="item-name">
+          <%= item.name %>
+        </div>
+        <div class="item-desc">
+          <%= item.description %>
+        </div>
+        <div class="item-price">¥<%= item.price.toLocaleString() %>
+        </div>
+      </div>
+      <div class="order-form">
+        <form action="/confirm" method="POST">
+          <input type="hidden" name="item_id" value="<%= item.id %>">
+          <label>数量: <input type="number" name="quantity" value="1" min="1"></label>
+          <br><br>
+          <button type="submit">カートに入れる</button>
+        </form>
+      </div>
+    </div>
+    <% }); %>
+</body>
+
+</html>

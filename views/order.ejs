@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8">
+  <title>ご注文手続き - TechMart</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .summary {
+      background-color: #f9f9f9;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+
+    input {
+      width: 100%;
+      padding: 8px;
+      box-sizing: border-box;
+    }
+
+    button {
+      background-color: #28a745;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      font-size: 1em;
+      border-radius: 4px;
+      cursor: pointer;
+      width: 100%;
+    }
+
+    button:hover {
+      background-color: #218838;
+    }
+  </style>
+</head>
+
+<body>
+  <h2>ご注文内容の確認</h2>
+
+  <div class="summary">
+    <p><strong>商品名:</strong>
+      <%= item.name %>
+    </p>
+    <p><strong>単価:</strong> ¥<%= item.price.toLocaleString() %>
+    </p>
+    <p><strong>数量:</strong>
+      <%= quantity %>個
+    </p>
+    <hr>
+    <p style="font-size: 1.2em; text-align: right;"><strong>合計請求額: ¥<%= total.toLocaleString() %></strong></p>
+  </div>
+
+  <h3>配送先情報の入力</h3>
+  <form action="/order" method="POST">
+    <input type="hidden" name="item_id" value="<%= item.id %>">
+    <input type="hidden" name="quantity" value="<%= quantity %>">
+
+    <div class="form-group">
+      <label for="customer_name">お届け先氏名</label>
+      <input type="text" id="customer_name" name="customer_name" required placeholder="例: 山田 太郎">
+    </div>
+
+    <div class="form-group">
+      <label for="customer_address">お届け先住所</label>
+      <input type="text" id="customer_address" name="customer_address" required placeholder="例: 東京都新宿区...">
+    </div>
+
+    <div class="form-group">
+      <label for="delivery_time">配送希望日時</label>
+      <input type="text" id="delivery_time" name="delivery_time" placeholder="例: 12月24日 午前中">
+    </div>
+
+    <button type="submit">注文を確定する</button>
+  </form>
+  <br>
+  <a href="/">商品一覧に戻る</a>
+</body>
+
+</html>

@@ -1,38 +1,186 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shop App</title>
-    <style>
-        body { font-family: sans-serif; padding: 20px; }
-        .product { border: 1px solid #ddd; padding: 10px; margin-bottom: 10px; border-radius: 5px; }
-        h1 { color: #333; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>お弁当注文アプリ</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #f9f9f9;
+    }
+
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+
+    .container {
+      display: flex;
+      gap: 20px;
+    }
+
+    .product-list {
+      flex: 2;
+    }
+
+    .cart-area {
+      flex: 1;
+      background: white;
+      padding: 15px;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+      height: fit-content;
+    }
+
+    .product {
+      background: white;
+      border: 1px solid #ddd;
+      padding: 15px;
+      margin-bottom: 10px;
+      border-radius: 5px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .product button {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .product button:hover {
+      background-color: #0056b3;
+    }
+
+    .cart-item {
+      border-bottom: 1px solid #eee;
+      padding: 5px 0;
+      font-size: 0.9em;
+    }
+
+    #order-btn {
+      width: 100%;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      padding: 10px;
+      margin-top: 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    #order-btn:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+  </style>
 </head>
+
 <body>
-    <h1>商品一覧</h1>
-    <div id="product-list">読み込み中...</div>
+  <h1>🍱 お弁当注文アプリ</h1>
 
-    <script>
-        // ページが開いたら /products にアクセスしてデータを取る
-        fetch('/products')
-            .then(response => response.json())
-            .then(data => {
-                const list = document.getElementById('product-list');
-                list.innerHTML = ''; // クリア
+  <div class="container">
+    <div class="product-list" id="product-list">
+      <p>読み込み中...</p>
+    </div>
 
-                data.forEach(item => {
-                    const div = document.createElement('div');
-                    div.className = 'product';
-                    div.innerHTML = `<strong>${item.name}</strong> - ¥${item.price}`;
-                    list.appendChild(div);
-                });
-            })
-            .catch(err => {
-                document.getElementById('product-list').textContent = 'エラーが発生しました';
-                console.error(err);
-            });
-    </script>
+    <div class="cart-area">
+      <h3>カートの中身</h3>
+      <div id="cart-items">
+        <p style="color: #888;">カートは空です</p>
+      </div>
+      <p><strong>合計: ¥<span id="total-price">0</span></strong></p>
+      <button id="order-btn" disabled onclick="submitOrder()">注文する</button>
+    </div>
+  </div>
+
+  <script>
+    let cart = []; // カートの中身を管理する配列
+
+    // ページ読み込み時に商品を取得
+    fetch('/products')
+      .then(res => res.json())
+      .then(data => {
+        const list = document.getElementById('product-list');
+        list.innerHTML = '';
+        data.forEach(item => {
+          const div = document.createElement('div');
+          div.className = 'product';
+          div.innerHTML = `
+                        <div>
+                            <strong>${item.name}</strong><br>
+                            ¥${item.price}
+                        </div>
+                        <button onclick="addToCart('${item.id}', '${item.name}', ${item.price})">追加</button>
+                    `;
+          list.appendChild(div);
+        });
+      });
+
+    // カートに追加する処理
+    function addToCart(id, name, price) {
+      cart.push({ id, name, price });
+      renderCart();
+    }
+
+    // カートの表示を更新する処理
+    function renderCart() {
+      const container = document.getElementById('cart-items');
+      const totalSpan = document.getElementById('total-price');
+      const btn = document.getElementById('order-btn');
+
+      if (cart.length === 0) {
+        container.innerHTML = '<p style="color: #888;">カートは空です</p>';
+        btn.disabled = true;
+        totalSpan.innerText = '0';
+        return;
+      }
+
+      container.innerHTML = '';
+      let total = 0;
+      cart.forEach((item, index) => {
+        total += item.price;
+        const div = document.createElement('div');
+        div.className = 'cart-item';
+        div.textContent = `${item.name} - ¥${item.price}`;
+        container.appendChild(div);
+      });
+
+      totalSpan.innerText = total;
+      btn.disabled = false;
+    }
+
+    // 注文送信処理
+    function submitOrder() {
+      if (!confirm('この内容で注文しますか？')) return;
+
+      fetch('/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ items: cart, total: document.getElementById('total-price').innerText })
+      })
+        .then(res => res.json())
+        .then(result => {
+          alert(result.message);
+          cart = []; // カートを空にする
+          renderCart();
+        })
+        .catch(err => {
+          console.error(err);
+          alert('注文に失敗しました');
+        });
+    }
+  </script>
 </body>
+
 </html>

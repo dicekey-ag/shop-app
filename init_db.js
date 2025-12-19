@@ -1,39 +1,57 @@
 const sqlite3 = require('sqlite3').verbose();
-const db = new sqlite3.Database('./shop.db');
+const db = new sqlite3.Database('./database.sqlite');
 
 db.serialize(() => {
-  // テーブルがなければ作成
-  db.run(`CREATE TABLE IF NOT EXISTS products (
+  // 既存のテーブルがあれば削除して作り直す（リセット）
+  db.run("DROP TABLE IF EXISTS items");
+  db.run("DROP TABLE IF EXISTS orders");
+
+  // 商品テーブル作成
+  db.run(`CREATE TABLE items (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
-    price INTEGER NOT NULL
+    name TEXT,
+    description TEXT,
+    price INTEGER,
+    image_url TEXT
   )`);
 
-  // データ確認と挿入
-  db.get("SELECT count(*) as count FROM products", (err, row) => {
-    if (err) {
-      console.error(err);
-      db.close(); // エラー時も閉じる
-      return;
-    }
+  // 注文テーブル作成
+  db.run(`CREATE TABLE orders (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    item_id INTEGER,
+    quantity INTEGER,
+    customer_name TEXT,
+    customer_address TEXT,
+    delivery_time TEXT
+  )`);
 
-    if (row.count === 0) {
-      const stmt = db.prepare("INSERT INTO products (name, price) VALUES (?, ?)");
-      stmt.run("Apple", 100);
-      stmt.run("Orange", 150);
-      stmt.run("Banana", 200);
+  // データ投入（ガジェットショップ用データ）
+  const stmt = db.prepare("INSERT INTO items (name, description, price, image_url) VALUES (?, ?, ?, ?)");
 
-      // 挿入処理の完了を待ってから閉じる
-      stmt.finalize((err) => {
-        if (err) console.error(err);
-        else console.log("Initial data inserted.");
-        db.close();
-      });
-    } else {
-      console.log("Data already exists.");
-      db.close(); // データがある場合もここで閉じる
-    }
-  });
+  stmt.run(
+    "高耐久 USB-C ケーブル (1.5m)",
+    "断線に強いナイロン編み込みケーブル。急速充電対応。",
+    1200,
+    "/images/cable.jpg" // 画像ファイルがない場合は仮のパスでOK
+  );
+
+  stmt.run(
+    "ワイヤレス・ノイズキャンセリングイヤホン",
+    "業界最高クラスのノイズキャンセリング性能。没入感をあなたに。",
+    12000,
+    "/images/earphone.jpg"
+  );
+
+  stmt.run(
+    "メカニカルキーボード (赤軸)",
+    "打鍵感にこだわったプログラマー向けキーボード。LEDバックライト搭載。",
+    15800,
+    "/images/keyboard.jpg"
+  );
+
+  stmt.finalize();
+
+  console.log("データベースの初期化が完了しました（ガジェットショップ仕様）");
 });
 
-// db.close();  <-- ここにあった削除命令を削除（これが早すぎた原因です）
+db.close();
